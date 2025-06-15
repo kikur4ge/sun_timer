@@ -1,0 +1,48 @@
+#! /usr/bin/env bash
+
+sun_timer() {
+    arg=$1
+    northing="$(curl --silent https://ipinfo.io/loc | cut -c 1-7)N"
+    easting="$(curl --silent https://ipinfo.io/loc | cut -c 9-15)E"
+
+    sunrise="$(sunwait list twilight "$northing" "$easting" | cut -c 1-5)"
+    sunset="$(sunwait list twilight "$northing" "$easting" | cut -c 8-13)"
+    status="$(sunwait poll twilight "$northing" "$easting")"
+
+    case $arg in
+    sunrise)
+        echo "$sunrise"
+        ;;
+    sunset)
+        echo "$sunset"
+        ;;
+    status)
+        echo "$status"
+        ;;
+    *) ;;
+    esac
+}
+
+display_help() {
+    echo "Usage: $0 [option...] {status|sunrise|sunset}" >&2
+    echo
+    echo "   status,   Return whether it is DAY or NIGHT based on ip location "
+    echo "   sunrise,  Return the sunrise time of the current day based on ip location "
+    echo "   sunset,   Return the sunset time of the current day based on ip location "
+    echo
+    exit 1
+}
+
+case $1 in
+help)
+    display_help
+    ;;
+"status" | "sunrise" | "sunset")
+    sun_timer "$1"
+    ;;
+*)
+    echo "Error: Unknown Option"
+    echo
+    display_help
+    ;;
+esac
